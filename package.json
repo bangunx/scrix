@@ -1,6 +1,6 @@
 {
   "name": "scrix",
-  "version": "2.0.3",
+  "version": "2.0.5",
   "description": "HADES Script Collection Management System - Interactive installer for managing and executing scripts",
   "main": "install.sh",
   "bin": {
@@ -9,7 +9,6 @@
   "scripts": {
     "test": "echo \"No tests specified\" && exit 0",
     "install-global": "npm install -g .",
-    "publish": "npm publish",
     "prepublishOnly": "node scripts/update-version.js",
     "version": "node scripts/update-version.js && git add package.json",
     "postversion": "git push && git push --tags"
