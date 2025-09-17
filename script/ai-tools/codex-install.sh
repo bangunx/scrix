@@ -1,9 +1,20 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # OpenAI Codex Installation Script
 # This script installs OpenAI Codex CLI tool globally using npm
+# Compatible with both bash and zsh shells
 
-set -euo pipefail  # Exit on any error, undefined vars, pipe failures
+# Detect shell and set compatibility
+if [[ -n "${ZSH_VERSION:-}" ]]; then
+    # Zsh compatibility
+    setopt shwordsplit
+    setopt pipefail
+    setopt errexit
+    setopt nounset
+else
+    # Bash compatibility
+    set -euo pipefail
+fi
 
 echo "🤖 Installing OpenAI Codex CLI..."
 echo "=================================="
@@ -49,20 +60,30 @@ if npm install -g @openai/codex; then
         fi
     else
         echo "⚠️  Codex installed but command not found in PATH"
-        echo "   You may need to restart your terminal or run: source ~/.bashrc"
+        if [[ -n "${ZSH_VERSION:-}" ]]; then
+            echo "   You may need to restart your terminal or run: source ~/.zshrc"
+        else
+            echo "   You may need to restart your terminal or run: source ~/.bashrc"
+        fi
     fi
     
     echo ""
     echo "📋 Next steps:"
-    echo "1. Restart your terminal or run: source ~/.bashrc"
-    echo "2. Verify installation: codex --version"
-    echo "3. Configure your OpenAI API key: codex config"
-    echo "4. Start using Codex: codex"
-    echo ""
-    echo "🔑 Don't forget to set up your OpenAI API key!"
-    echo "   Get your API key from: https://platform.openai.com/api-keys"
-    echo ""
-    echo "🎉 Happy coding with OpenAI Codex!"
+    if [[ -n "${ZSH_VERSION:-}" ]]; then
+        echo "1. Restart your terminal or run: source ~/.zshrc"
+        echo "💡 Shell detected: zsh"
+    else
+        echo "1. Restart your terminal or run: source ~/.bashrc"
+        echo "💡 Shell detected: bash"
+    fi
+echo "2. Verify installation: codex --version"
+echo "3. Configure your OpenAI API key: codex config"
+echo "4. Start using Codex: codex"
+echo ""
+echo "🔑 Don't forget to set up your OpenAI API key!"
+echo "   Get your API key from: https://platform.openai.com/api-keys"
+echo ""
+echo "🎉 Happy coding with OpenAI Codex!"
 else
     echo ""
     echo "❌ OpenAI Codex installation failed!"

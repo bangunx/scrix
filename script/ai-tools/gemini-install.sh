@@ -1,9 +1,20 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Google Gemini CLI Installation Script
 # This script installs Google Gemini CLI tool globally using npm
+# Compatible with both bash and zsh shells
 
-set -euo pipefail  # Exit on any error, undefined vars, pipe failures
+# Detect shell and set compatibility
+if [[ -n "${ZSH_VERSION:-}" ]]; then
+    # Zsh compatibility
+    setopt shwordsplit
+    setopt pipefail
+    setopt errexit
+    setopt nounset
+else
+    # Bash compatibility
+    set -euo pipefail
+fi
 
 echo "🤖 Installing Google Gemini CLI..."
 echo "=================================="
@@ -49,20 +60,30 @@ if npm install -g @google/gemini-cli; then
         fi
     else
         echo "⚠️  Gemini installed but command not found in PATH"
-        echo "   You may need to restart your terminal or run: source ~/.bashrc"
+        if [[ -n "${ZSH_VERSION:-}" ]]; then
+            echo "   You may need to restart your terminal or run: source ~/.zshrc"
+        else
+            echo "   You may need to restart your terminal or run: source ~/.bashrc"
+        fi
     fi
     
     echo ""
     echo "📋 Next steps:"
-    echo "1. Restart your terminal or run: source ~/.bashrc"
-    echo "2. Verify installation: gemini --version"
-    echo "3. Configure your Google API key: gemini config"
-    echo "4. Start using Gemini: gemini"
-    echo ""
-    echo "🔑 Don't forget to set up your Google API key!"
-    echo "   Get your API key from: https://aistudio.google.com/app/apikey"
-    echo ""
-    echo "🎉 Happy coding with Google Gemini!"
+    if [[ -n "${ZSH_VERSION:-}" ]]; then
+        echo "1. Restart your terminal or run: source ~/.zshrc"
+        echo "💡 Shell detected: zsh"
+    else
+        echo "1. Restart your terminal or run: source ~/.bashrc"
+        echo "💡 Shell detected: bash"
+    fi
+echo "2. Verify installation: gemini --version"
+echo "3. Configure your Google API key: gemini config"
+echo "4. Start using Gemini: gemini"
+echo ""
+echo "🔑 Don't forget to set up your Google API key!"
+echo "   Get your API key from: https://aistudio.google.com/app/apikey"
+echo ""
+echo "🎉 Happy coding with Google Gemini!"
 else
     echo ""
     echo "❌ Google Gemini CLI installation failed!"

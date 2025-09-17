@@ -10,7 +10,6 @@ Koleksi script untuk menginstall berbagai AI development tools yang berguna untu
 - **Command**: `opencode`
 - **Website**: https://opencode.ai
 - **Installation**: `bash script/ai-tools/opencode.sh`
-- **Fix PATH**: `bash script/ai-tools/opencode-fix.sh`
 
 ### 2. OpenAI Codex
 - **Script**: `codex-install.sh`
@@ -42,6 +41,13 @@ Koleksi script untuk menginstall berbagai AI development tools yang berguna untu
 - **Website**: https://coderabbit.ai
 - **Installation**: `bash script/ai-tools/coderabbit-install.sh`
 
+### 6. Cursor AI Code Editor
+- **Script**: `cursor-install.sh`
+- **Description**: AI-powered code editor with intelligent assistance
+- **Command**: `cursor-agent` (CLI), `cursor` (GUI application)
+- **Website**: https://cursor.com
+- **Installation**: `bash script/ai-tools/cursor-install.sh`
+
 ## 🚀 Quick Installation
 
 ### Install All AI Tools
@@ -65,6 +71,15 @@ bash script/ai-tools/qwen-install.sh
 
 # CodeRabbit CLI
 bash script/ai-tools/coderabbit-install.sh
+
+# Cursor AI Code Editor
+bash script/ai-tools/cursor-install.sh
+```
+
+### Auto-Refresh Environment
+```bash
+# Refresh all AI tools environment automatically
+bash script/ai-tools/ai-tools-refresh.sh
 ```
 
 ## 🧪 Testing
@@ -81,11 +96,18 @@ bash -n script/ai-tools/[script-name].sh
 
 ## 🔧 Troubleshooting
 
-### OpenCode AI PATH Issues
-If OpenCode AI is not accessible after installation:
+### Auto-Refresh Environment
+If any AI tools are not accessible after installation:
 ```bash
-bash script/ai-tools/opencode-fix.sh
+bash script/ai-tools/ai-tools-refresh.sh
 ```
+
+This script will:
+- ✅ Automatically detect your shell (bash/zsh)
+- ✅ Configure PATH for all AI tools
+- ✅ Refresh your shell environment
+- ✅ Verify all installations
+- ✅ Show usage examples
 
 ### Common Issues
 
@@ -145,6 +167,14 @@ qwen-code                 # Start interactive mode
 coderabbit --version     # Check version
 coderabbit auth          # Authenticate
 coderabbit               # Start interactive mode
+```
+
+### Cursor AI Code Editor
+```bash
+cursor-agent --version  # Check version
+cursor-agent --help     # Show help
+cursor-agent            # Start Cursor Agent (CLI)
+# Note: Cursor GUI application launches from desktop
 ```
 
 ## 🎯 Features

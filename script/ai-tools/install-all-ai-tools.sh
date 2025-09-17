@@ -1,9 +1,20 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Install All AI Tools Script
 # This script installs all available AI tools in one go
+# Compatible with both bash and zsh shells
 
-set -euo pipefail  # Exit on any error, undefined vars, pipe failures
+# Detect shell and set compatibility
+if [[ -n "${ZSH_VERSION:-}" ]]; then
+    # Zsh compatibility
+    setopt shwordsplit
+    setopt pipefail
+    setopt errexit
+    setopt nounset
+else
+    # Bash compatibility
+    set -euo pipefail
+fi
 
 echo "🚀 Installing All AI Tools"
 echo "========================="
@@ -79,13 +90,14 @@ install_tool "codex-install.sh"
 install_tool "gemini-install.sh"
 install_tool "qwen-install.sh"
 install_tool "coderabbit-install.sh"
+install_tool "cursor-install.sh"
 
-# Fix OpenCode AI PATH if needed
-echo -e "${C_BLUE}Fixing OpenCode AI PATH...${C_RESET}"
-if bash script/ai-tools/opencode-fix.sh; then
-    echo -e "${C_GREEN}✅ OpenCode AI PATH fixed${C_RESET}"
+# Auto-refresh AI tools environment
+echo -e "${C_BLUE}Auto-refreshing AI tools environment...${C_RESET}"
+if bash script/ai-tools/ai-tools-refresh.sh; then
+    echo -e "${C_GREEN}✅ AI tools environment refreshed${C_RESET}"
 else
-    echo -e "${C_YELLOW}⚠️  OpenCode AI PATH fix failed${C_RESET}"
+    echo -e "${C_YELLOW}⚠️  AI tools environment refresh failed${C_RESET}"
 fi
 
 echo ""
@@ -115,13 +127,20 @@ fi
 echo -e "${C_BOLD}Next Steps:${C_RESET}"
 echo "==========="
 echo ""
-echo "1. Restart your terminal or run: source ~/.bashrc"
+if [[ -n "${ZSH_VERSION:-}" ]]; then
+    echo "1. Restart your terminal or run: source ~/.zshrc"
+    echo "💡 Shell detected: zsh"
+else
+    echo "1. Restart your terminal or run: source ~/.bashrc"
+    echo "💡 Shell detected: bash"
+fi
 echo "2. Verify installations:"
 echo "   • opencode --version"
 echo "   • codex --version"
 echo "   • gemini --version"
 echo "   • qwen-code --version"
 echo "   • coderabbit --version"
+echo "   • cursor (check applications menu)"
 echo ""
 echo "3. Configure API keys as needed:"
 echo "   • OpenAI: https://platform.openai.com/api-keys"

@@ -1,9 +1,20 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # OpenCode AI Installation Script
 # This script installs OpenCode AI using the official installation method
+# Compatible with both bash and zsh shells
 
-set -euo pipefail  # Exit on any error, undefined vars, pipe failures
+# Detect shell and set compatibility
+if [[ -n "${ZSH_VERSION:-}" ]]; then
+    # Zsh compatibility
+    setopt shwordsplit
+    setopt pipefail
+    setopt errexit
+    setopt nounset
+else
+    # Bash compatibility
+    set -euo pipefail
+fi
 
 echo "🚀 Installing OpenCode AI..."
 echo "================================"
@@ -56,16 +67,25 @@ if [[ -f "/home/$USER/.opencode/bin/opencode" ]]; then
         echo "⚠️  OpenCode AI binary exists but not in PATH"
     fi
     
-    # Check if PATH is configured in bashrc
-    if grep -q "opencode/bin" ~/.bashrc; then
-        echo "✅ PATH configuration found in ~/.bashrc"
+    # Detect shell and configure appropriate config file
+    if [[ -n "${ZSH_VERSION:-}" ]]; then
+        SHELL_CONFIG="$HOME/.zshrc"
+        SHELL_NAME="zsh"
     else
-        echo "⚠️  PATH not configured in ~/.bashrc"
+        SHELL_CONFIG="$HOME/.bashrc"
+        SHELL_NAME="bash"
+    fi
+    
+    # Check if PATH is configured in shell config
+    if grep -q "opencode/bin" "$SHELL_CONFIG" 2>/dev/null; then
+        echo "✅ PATH configuration found in $SHELL_CONFIG"
+    else
+        echo "⚠️  PATH not configured in $SHELL_CONFIG"
         echo "   Adding PATH configuration..."
-        echo "" >> ~/.bashrc
-        echo "# OpenCode AI" >> ~/.bashrc
-        echo "export PATH=\"/home/$USER/.opencode/bin:\$PATH\"" >> ~/.bashrc
-        echo "✅ PATH configuration added to ~/.bashrc"
+        echo "" >> "$SHELL_CONFIG"
+        echo "# OpenCode AI" >> "$SHELL_CONFIG"
+        echo "export PATH=\"/home/$USER/.opencode/bin:\$PATH\"" >> "$SHELL_CONFIG"
+        echo "✅ PATH configuration added to $SHELL_CONFIG"
     fi
 else
     echo "❌ OpenCode AI binary not found"
@@ -74,7 +94,13 @@ fi
 
 echo ""
 echo "📋 Next steps:"
-echo "1. Restart your terminal or run: source ~/.bashrc"
+if [[ -n "${ZSH_VERSION:-}" ]]; then
+    echo "1. Restart your terminal or run: source ~/.zshrc"
+    echo "💡 Shell detected: zsh"
+else
+    echo "1. Restart your terminal or run: source ~/.bashrc"
+    echo "💡 Shell detected: bash"
+fi
 echo "2. Verify installation: opencode --version"
 echo "3. Start using OpenCode AI: opencode"
 echo "4. For help: opencode --help"

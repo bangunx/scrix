@@ -1,9 +1,20 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # CodeRabbit CLI Installation Script
 # This script installs CodeRabbit CLI tool using the official installation method
+# Compatible with both bash and zsh shells
 
-set -euo pipefail  # Exit on any error, undefined vars, pipe failures
+# Detect shell and set compatibility
+if [[ -n "${ZSH_VERSION:-}" ]]; then
+    # Zsh compatibility
+    setopt shwordsplit
+    setopt pipefail
+    setopt errexit
+    setopt nounset
+else
+    # Bash compatibility
+    set -euo pipefail
+fi
 
 echo "🐰 Installing CodeRabbit CLI..."
 echo "==============================="
@@ -35,20 +46,30 @@ if curl -fsSL https://cli.coderabbit.ai/install.sh | sh; then
         fi
     else
         echo "⚠️  CodeRabbit installed but command not found in PATH"
-        echo "   You may need to restart your terminal or run: source ~/.bashrc"
+        if [[ -n "${ZSH_VERSION:-}" ]]; then
+            echo "   You may need to restart your terminal or run: source ~/.zshrc"
+        else
+            echo "   You may need to restart your terminal or run: source ~/.bashrc"
+        fi
     fi
     
     echo ""
     echo "📋 Next steps:"
-    echo "1. Restart your terminal or run: source ~/.bashrc"
-    echo "2. Verify installation: coderabbit --version"
-    echo "3. Configure your API key: coderabbit auth"
-    echo "4. Start using CodeRabbit: coderabbit"
-    echo ""
-    echo "🔑 Don't forget to authenticate with CodeRabbit!"
-    echo "   Visit: https://coderabbit.ai for more information"
-    echo ""
-    echo "🎉 Happy coding with CodeRabbit!"
+    if [[ -n "${ZSH_VERSION:-}" ]]; then
+        echo "1. Restart your terminal or run: source ~/.zshrc"
+        echo "💡 Shell detected: zsh"
+    else
+        echo "1. Restart your terminal or run: source ~/.bashrc"
+        echo "💡 Shell detected: bash"
+    fi
+echo "2. Verify installation: coderabbit --version"
+echo "3. Configure your API key: coderabbit auth"
+echo "4. Start using CodeRabbit: coderabbit"
+echo ""
+echo "🔑 Don't forget to authenticate with CodeRabbit!"
+echo "   Visit: https://coderabbit.ai for more information"
+echo ""
+echo "🎉 Happy coding with CodeRabbit!"
 else
     echo ""
     echo "❌ CodeRabbit CLI installation failed!"

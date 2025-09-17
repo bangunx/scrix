@@ -1,9 +1,20 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Test All AI Tools Script
 # This script tests all AI tools installation scripts to ensure they work correctly
+# Compatible with both bash and zsh shells
 
-set -euo pipefail  # Exit on any error, undefined vars, pipe failures
+# Detect shell and set compatibility
+if [[ -n "${ZSH_VERSION:-}" ]]; then
+    # Zsh compatibility
+    setopt shwordsplit
+    setopt pipefail
+    setopt errexit
+    setopt nounset
+else
+    # Bash compatibility
+    set -euo pipefail
+fi
 
 echo "🧪 Testing All AI Tools Installation Scripts"
 echo "============================================="
@@ -73,11 +84,12 @@ echo -e "${C_BOLD}Testing AI Tools Installation Scripts:${C_RESET}"
 echo ""
 
 test_script "opencode.sh"
-test_script "opencode-fix.sh"
 test_script "codex-install.sh"
 test_script "gemini-install.sh"
 test_script "qwen-install.sh"
 test_script "coderabbit-install.sh"
+test_script "cursor-install.sh"
+test_script "ai-tools-refresh.sh"
 
 # Summary
 echo -e "${C_BOLD}Test Summary:${C_RESET}"
@@ -110,12 +122,24 @@ if [[ ${#FAILED_TESTS[@]} -eq 0 ]]; then
     echo "  • Google Gemini CLI (gemini-install.sh)"
     echo "  • Qwen Code CLI (qwen-install.sh)"
     echo "  • CodeRabbit CLI (coderabbit-install.sh)"
+    echo "  • Cursor AI Code Editor (cursor-install.sh)"
     echo ""
     echo -e "${C_BOLD}Usage:${C_RESET}"
     echo "  bash script/ai-tools/[script-name].sh"
+    echo "  zsh script/ai-tools/[script-name].sh"
     echo ""
-    echo -e "${C_BOLD}Fix OpenCode AI PATH issues:${C_RESET}"
-    echo "  bash script/ai-tools/opencode-fix.sh"
+    echo -e "${C_BOLD}Shell Compatibility:${C_RESET}"
+    if [[ -n "${ZSH_VERSION:-}" ]]; then
+        echo "  💡 Currently running in: zsh"
+        echo "  ✅ All scripts are compatible with zsh and bash"
+    else
+        echo "  💡 Currently running in: bash"
+        echo "  ✅ All scripts are compatible with bash and zsh"
+    fi
+    echo ""
+    echo -e "${C_BOLD}Auto-refresh AI tools environment:${C_RESET}"
+    echo "  bash script/ai-tools/ai-tools-refresh.sh"
+    echo "  zsh script/ai-tools/ai-tools-refresh.sh"
     exit 0
 else
     echo -e "${C_RED}❌ Some tests failed. Please fix the issues above.${C_RESET}"

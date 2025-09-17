@@ -1,9 +1,20 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Qwen Code CLI Installation Script
 # This script installs Qwen Code CLI tool globally using npm
+# Compatible with both bash and zsh shells
 
-set -euo pipefail  # Exit on any error, undefined vars, pipe failures
+# Detect shell and set compatibility
+if [[ -n "${ZSH_VERSION:-}" ]]; then
+    # Zsh compatibility
+    setopt shwordsplit
+    setopt pipefail
+    setopt errexit
+    setopt nounset
+else
+    # Bash compatibility
+    set -euo pipefail
+fi
 
 echo "🤖 Installing Qwen Code CLI..."
 echo "==============================="
@@ -49,20 +60,30 @@ if npm install -g @qwen-code/qwen-code@latest; then
         fi
     else
         echo "⚠️  Qwen Code installed but command not found in PATH"
-        echo "   You may need to restart your terminal or run: source ~/.bashrc"
+        if [[ -n "${ZSH_VERSION:-}" ]]; then
+            echo "   You may need to restart your terminal or run: source ~/.zshrc"
+        else
+            echo "   You may need to restart your terminal or run: source ~/.bashrc"
+        fi
     fi
     
     echo ""
     echo "📋 Next steps:"
-    echo "1. Restart your terminal or run: source ~/.bashrc"
-    echo "2. Verify installation: qwen-code --version"
-    echo "3. Configure your API settings: qwen-code config"
-    echo "4. Start using Qwen Code: qwen-code"
-    echo ""
-    echo "🔑 Don't forget to set up your API configuration!"
-    echo "   Visit: https://github.com/QwenLM/Qwen-Code for more information"
-    echo ""
-    echo "🎉 Happy coding with Qwen Code!"
+    if [[ -n "${ZSH_VERSION:-}" ]]; then
+        echo "1. Restart your terminal or run: source ~/.zshrc"
+        echo "💡 Shell detected: zsh"
+    else
+        echo "1. Restart your terminal or run: source ~/.bashrc"
+        echo "💡 Shell detected: bash"
+    fi
+echo "2. Verify installation: qwen-code --version"
+echo "3. Configure your API settings: qwen-code config"
+echo "4. Start using Qwen Code: qwen-code"
+echo ""
+echo "🔑 Don't forget to set up your API configuration!"
+echo "   Visit: https://github.com/QwenLM/Qwen-Code for more information"
+echo ""
+echo "🎉 Happy coding with Qwen Code!"
 else
     echo ""
     echo "❌ Qwen Code CLI installation failed!"
