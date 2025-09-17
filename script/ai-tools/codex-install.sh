@@ -34,17 +34,39 @@ echo ""
 
 # Install OpenAI Codex globally
 echo "📥 Installing @openai/codex globally..."
-npm install -g @openai/codex
-
-echo ""
-echo "✅ OpenAI Codex installation completed!"
-echo ""
-echo "📋 Next steps:"
-echo "1. Verify installation: codex --version"
-echo "2. Configure your OpenAI API key: codex config"
-echo "3. Start using Codex: codex"
-echo ""
-echo "🔑 Don't forget to set up your OpenAI API key!"
-echo "   Get your API key from: https://platform.openai.com/api-keys"
-echo ""
-echo "🎉 Happy coding with OpenAI Codex!"
+if npm install -g @openai/codex; then
+    echo ""
+    echo "✅ OpenAI Codex installation completed!"
+    
+    # Try to verify installation
+    echo "🔍 Verifying installation..."
+    if command -v codex &> /dev/null; then
+        echo "✅ Codex command found: $(which codex)"
+        if codex --version &> /dev/null; then
+            echo "✅ Codex version: $(codex --version)"
+        else
+            echo "⚠️  Codex installed but version check failed"
+        fi
+    else
+        echo "⚠️  Codex installed but command not found in PATH"
+        echo "   You may need to restart your terminal or run: source ~/.bashrc"
+    fi
+    
+    echo ""
+    echo "📋 Next steps:"
+    echo "1. Restart your terminal or run: source ~/.bashrc"
+    echo "2. Verify installation: codex --version"
+    echo "3. Configure your OpenAI API key: codex config"
+    echo "4. Start using Codex: codex"
+    echo ""
+    echo "🔑 Don't forget to set up your OpenAI API key!"
+    echo "   Get your API key from: https://platform.openai.com/api-keys"
+    echo ""
+    echo "🎉 Happy coding with OpenAI Codex!"
+else
+    echo ""
+    echo "❌ OpenAI Codex installation failed!"
+    echo "Please check your internet connection and npm configuration."
+    echo "You can also try: npm install -g @openai/codex"
+    exit 1
+fi

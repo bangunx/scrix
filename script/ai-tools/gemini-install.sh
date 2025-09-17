@@ -34,17 +34,39 @@ echo ""
 
 # Install Google Gemini CLI globally
 echo "📥 Installing @google/gemini-cli globally..."
-npm install -g @google/gemini-cli
-
-echo ""
-echo "✅ Google Gemini CLI installation completed!"
-echo ""
-echo "📋 Next steps:"
-echo "1. Verify installation: gemini --version"
-echo "2. Configure your Google API key: gemini config"
-echo "3. Start using Gemini: gemini"
-echo ""
-echo "🔑 Don't forget to set up your Google API key!"
-echo "   Get your API key from: https://aistudio.google.com/app/apikey"
-echo ""
-echo "🎉 Happy coding with Google Gemini!"
+if npm install -g @google/gemini-cli; then
+    echo ""
+    echo "✅ Google Gemini CLI installation completed!"
+    
+    # Try to verify installation
+    echo "🔍 Verifying installation..."
+    if command -v gemini &> /dev/null; then
+        echo "✅ Gemini command found: $(which gemini)"
+        if gemini --version &> /dev/null; then
+            echo "✅ Gemini version: $(gemini --version)"
+        else
+            echo "⚠️  Gemini installed but version check failed"
+        fi
+    else
+        echo "⚠️  Gemini installed but command not found in PATH"
+        echo "   You may need to restart your terminal or run: source ~/.bashrc"
+    fi
+    
+    echo ""
+    echo "📋 Next steps:"
+    echo "1. Restart your terminal or run: source ~/.bashrc"
+    echo "2. Verify installation: gemini --version"
+    echo "3. Configure your Google API key: gemini config"
+    echo "4. Start using Gemini: gemini"
+    echo ""
+    echo "🔑 Don't forget to set up your Google API key!"
+    echo "   Get your API key from: https://aistudio.google.com/app/apikey"
+    echo ""
+    echo "🎉 Happy coding with Google Gemini!"
+else
+    echo ""
+    echo "❌ Google Gemini CLI installation failed!"
+    echo "Please check your internet connection and npm configuration."
+    echo "You can also try: npm install -g @google/gemini-cli"
+    exit 1
+fi

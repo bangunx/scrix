@@ -34,17 +34,39 @@ echo ""
 
 # Install Qwen Code CLI globally
 echo "📥 Installing @qwen-code/qwen-code@latest globally..."
-npm install -g @qwen-code/qwen-code@latest
-
-echo ""
-echo "✅ Qwen Code CLI installation completed!"
-echo ""
-echo "📋 Next steps:"
-echo "1. Verify installation: qwen-code --version"
-echo "2. Configure your API settings: qwen-code config"
-echo "3. Start using Qwen Code: qwen-code"
-echo ""
-echo "🔑 Don't forget to set up your API configuration!"
-echo "   Visit: https://github.com/QwenLM/Qwen-Code for more information"
-echo ""
-echo "🎉 Happy coding with Qwen Code!"
+if npm install -g @qwen-code/qwen-code@latest; then
+    echo ""
+    echo "✅ Qwen Code CLI installation completed!"
+    
+    # Try to verify installation
+    echo "🔍 Verifying installation..."
+    if command -v qwen-code &> /dev/null; then
+        echo "✅ Qwen Code command found: $(which qwen-code)"
+        if qwen-code --version &> /dev/null; then
+            echo "✅ Qwen Code version: $(qwen-code --version)"
+        else
+            echo "⚠️  Qwen Code installed but version check failed"
+        fi
+    else
+        echo "⚠️  Qwen Code installed but command not found in PATH"
+        echo "   You may need to restart your terminal or run: source ~/.bashrc"
+    fi
+    
+    echo ""
+    echo "📋 Next steps:"
+    echo "1. Restart your terminal or run: source ~/.bashrc"
+    echo "2. Verify installation: qwen-code --version"
+    echo "3. Configure your API settings: qwen-code config"
+    echo "4. Start using Qwen Code: qwen-code"
+    echo ""
+    echo "🔑 Don't forget to set up your API configuration!"
+    echo "   Visit: https://github.com/QwenLM/Qwen-Code for more information"
+    echo ""
+    echo "🎉 Happy coding with Qwen Code!"
+else
+    echo ""
+    echo "❌ Qwen Code CLI installation failed!"
+    echo "Please check your internet connection and npm configuration."
+    echo "You can also try: npm install -g @qwen-code/qwen-code@latest"
+    exit 1
+fi
