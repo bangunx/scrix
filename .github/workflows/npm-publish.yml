@@ -34,6 +34,8 @@ jobs:
       id: version
       run: |
         chmod +x scripts/check-and-bump-version.sh
+        chmod +x scripts/update-version.js
+        
         if [ -n "${{ github.event.inputs.version }}" ]; then
           VERSION="${{ github.event.inputs.version }}"
           echo "$VERSION" > VERSION
@@ -41,8 +43,25 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "📦 Using manual version: $VERSION"
         else
-          ./scripts/check-and-bump-version.sh
-          VERSION=$(cat VERSION)
+          # Check if current version exists on NPM
+          CURRENT_VERSION=$(cat VERSION)
+          echo "📋 Current version: $CURRENT_VERSION"
+          
+          if npm view scrix@$CURRENT_VERSION version >/dev/null 2>&1; then
+            echo "❌ Version $CURRENT_VERSION already exists on NPM"
+            # Bump version
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+            NEW_PATCH=$((PATCH + 1))
+            NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+            echo "$NEW_VERSION" > VERSION
+            node scripts/update-version.js
+            echo "📈 Bumped to version: $NEW_VERSION"
+            VERSION="$NEW_VERSION"
+          else
+            echo "✅ Version $CURRENT_VERSION is available for publishing"
+            VERSION="$CURRENT_VERSION"
+          fi
+          
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "📦 Final version: $VERSION"
         fi

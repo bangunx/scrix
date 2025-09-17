@@ -1,6 +1,6 @@
 {
   "name": "scrix",
-  "version": "2.0.1",
+  "version": "2.0.3",
   "description": "HADES Script Collection Management System - Interactive installer for managing and executing scripts",
   "main": "install.sh",
   "bin": {
