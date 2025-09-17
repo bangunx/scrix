@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Scrix Global Command Wrapper
+# This script allows scrix to be run globally after npm install -g scrix
+
+set -euo pipefail
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Handle both symlink and regular installation
+if [[ -L "${BASH_SOURCE[0]}" ]]; then
+    # If this is a symlink, resolve it
+    REAL_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+    SCRIX_ROOT="$(dirname "$(dirname "$REAL_PATH")")"
+else
+    # Regular installation
+    SCRIX_ROOT="$(dirname "$SCRIPT_DIR")"
+fi
+
+# Path to the main install.sh script
+INSTALL_SCRIPT="$SCRIX_ROOT/install.sh"
+
+# Debug information (can be removed later)
+# echo "DEBUG: SCRIPT_DIR=$SCRIPT_DIR"
+# echo "DEBUG: SCRIX_ROOT=$SCRIX_ROOT"
+# echo "DEBUG: INSTALL_SCRIPT=$INSTALL_SCRIPT"
+
+# Check if the main script exists
+if [[ ! -f "$INSTALL_SCRIPT" ]]; then
+    echo "❌ Error: Main scrix script not found at $INSTALL_SCRIPT"
+    echo "Please reinstall scrix: npm install -g scrix"
+    exit 1
+fi
+
+# Make sure the script is executable
+chmod +x "$INSTALL_SCRIPT" 2>/dev/null || true
+
+# Execute the main install.sh script with all passed arguments
+exec "$INSTALL_SCRIPT" "$@"

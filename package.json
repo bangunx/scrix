@@ -1,0 +1,55 @@
+{
+  "name": "scrix",
+  "version": "2.0.0",
+  "description": "HADES Script Collection Management System - Interactive installer for managing and executing scripts",
+  "main": "install.sh",
+  "bin": {
+    "scrix": "./bin/scrix"
+  },
+  "scripts": {
+    "test": "echo \"No tests specified\" && exit 0",
+    "install-global": "npm install -g .",
+    "publish": "npm publish",
+    "prepublishOnly": "node scripts/update-version.js",
+    "version": "node scripts/update-version.js && git add package.json",
+    "postversion": "git push && git push --tags"
+  },
+  "keywords": [
+    "bash",
+    "scripts",
+    "installer",
+    "dev-tools",
+    "ai-tools",
+    "git-tools",
+    "vm-security",
+    "automation",
+    "linux",
+    "ubuntu",
+    "arch"
+  ],
+  "author": "bangunx",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bangunx/scrix.git"
+  },
+  "homepage": "https://github.com/bangunx/scrix#readme",
+  "bugs": {
+    "url": "https://github.com/bangunx/scrix/issues"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "files": [
+    "install.sh",
+    "bin/",
+    "script/",
+    "README.md",
+    "LICENSE"
+  ],
+  "preferGlobal": true,
+  "os": [
+    "linux",
+    "darwin"
+  ]
+}

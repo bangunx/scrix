@@ -1,28 +1,53 @@
-## my-script
+# Scrix - HADES Script Collection Management System
 
-Installer interaktif untuk menjalankan kumpulan skrip di folder `script/`. Bisa dijalankan langsung via curl (one-liner) atau secara lokal. Saat dijalankan via curl, installer akan otomatis clone/pull repo ini sebelum menampilkan menu pilihan skrip.
+🚀 **Scrix** adalah sistem manajemen koleksi skrip interaktif yang memungkinkan Anda mengelola dan menjalankan berbagai skrip development, AI tools, git tools, dan security tools dengan mudah.
 
-Repo: [localan/my-script](https://github.com/localan/my-script)
+Repo: [bangunx/scrix](https://github.com/bangunx/scrix)
 
-### Prasyarat
-- bash
-- git
-- curl
+## 🎯 Fitur Utama
 
-### Cara Cepat (one‑liner)
-Jalankan perintah berikut:
+- **Interactive Menu System** - Interface yang user-friendly dengan kategori terorganisir
+- **AI Tools** - OpenCode AI, OpenAI Codex, Google Gemini, Qwen Code, CodeRabbit
+- **Development Tools** - Docker, Tmux, Zsh, GitHub integration
+- **Git Tools** - Git configuration, GitHub connection utilities
+- **VM Security** - Server hardening, security audits, SSH configuration
+- **Cross-platform** - Support Linux dan macOS
+- **Idempotent** - Aman dijalankan berulang kali
+
+## 📦 Instalasi
+
+### 🚀 Cara Tercepat - NPM Global Install
 
 ```bash
-bash <(curl -L link.dwx.my.id/my-script)
+npm install -g scrix
 ```
 
-Opsi kustom lokasi repo dan URL repo (opsional):
+Setelah instalasi, jalankan:
+```bash
+scrix
+```
+
+### 📥 Cara Manual - One-liner
 
 ```bash
-MY_SCRIPT_DIR="$HOME/my-script" \
-MY_SCRIPT_REPO_URL="https://github.com/localan/my-script" \
-bash <(curl -L link.dwx.my.id/my-script)
+bash <(curl -fsSL https://raw.githubusercontent.com/bangunx/scrix/main/install.sh)
 ```
+
+### 🛠️ Cara Lokal
+
+```bash
+git clone https://github.com/bangunx/scrix.git
+cd scrix
+chmod +x install.sh
+./install.sh
+```
+
+## 📋 Prasyarat
+
+- **Node.js** (untuk instalasi npm) - [Download](https://nodejs.org/)
+- **bash** - Terminal shell
+- **git** - Version control
+- **curl** - Download utility
 
 ### Cara Lokal
 1) Clone repo (jika belum):
