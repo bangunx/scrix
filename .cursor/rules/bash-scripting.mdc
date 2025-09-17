@@ -1,0 +1,210 @@
+---
+globs: *.sh
+---
+
+# Bash Scripting Standards for HADES Script Collection
+
+## Required Script Headers
+All bash scripts must start with proper error handling:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+```
+
+## Script Structure Standards
+
+### 1. Script Header Template
+```bash
+#!/bin/bash
+
+# Script Name - Brief Description
+# This script [detailed description of what it does]
+
+set -euo pipefail
+```
+
+### 2. Error Handling
+- Always use `set -euo pipefail` for strict error handling
+- Use `trap` for cleanup operations when needed
+- Provide meaningful error messages with context
+
+### 3. Logging Functions
+Use consistent logging functions throughout scripts:
+
+```bash
+log_info() {
+    printf "\033[0;94mℹ️ %s\033[0m\n" "$*"
+}
+
+log_success() {
+    printf "\033[0;92m✅ %s\033[0m\n" "$*"
+}
+
+log_warning() {
+    printf "\033[0;93m⚠️ %s\033[0m\n" "$*"
+}
+
+log_error() {
+    printf "\033[0;91m❌ %s\033[0m\n" "$*"
+}
+```
+
+### 4. Color Constants
+Define color constants for consistent theming:
+
+```bash
+declare -r C_RESET='\033[0m'
+declare -r C_BOLD='\033[1m'
+declare -r C_RED='\033[0;31m'
+declare -r C_GREEN='\033[0;32m'
+declare -r C_YELLOW='\033[0;33m'
+declare -r C_BLUE='\033[0;34m'
+declare -r C_CYAN='\033[0;36m'
+```
+
+### 5. Input Validation
+- Always validate user input
+- Provide clear error messages for invalid input
+- Use case statements for menu choices
+
+### 6. Sudo Detection
+For scripts requiring elevated privileges:
+
+```bash
+check_sudo_requirements() {
+    if [[ $EUID -eq 0 ]]; then
+        log_warning "This script should not be run as root directly"
+        return 1
+    fi
+    
+    if ! sudo -v; then
+        log_error "This script requires sudo privileges"
+        return 1
+    fi
+}
+```
+
+### 7. Idempotent Operations
+- Scripts should be safe to run multiple times
+- Check for existing configurations before applying changes
+- Use conditional logic to avoid duplicate operations
+
+### 8. Backup Strategy
+For configuration changes, always create backups:
+
+```bash
+backup_file() {
+    local file="$1"
+    local backup="${file}.$(date +%Y%m%d-%H%M%S).bak"
+    cp "$file" "$backup"
+    log_info "Backup created: $backup"
+}
+```
+
+### 9. Service Management
+Use systemd for service management:
+
+```bash
+restart_service() {
+    local service="$1"
+    if systemctl is-active --quiet "$service"; then
+        sudo systemctl restart "$service"
+        log_success "Service $service restarted"
+    else
+        log_warning "Service $service is not active"
+    fi
+}
+```
+
+### 10. File Permissions
+Always set proper file permissions:
+
+```bash
+chmod +x "$script_path" 2>/dev/null || true
+```
+
+## Security Best Practices
+
+### 1. Path Validation
+- Validate all file paths before operations
+- Use absolute paths when possible
+- Sanitize user input
+
+### 2. Privilege Escalation
+- Minimize sudo usage
+- Use specific commands rather than broad sudo access
+- Document why elevated privileges are needed
+
+### 3. Network Operations
+- Validate URLs and network resources
+- Use secure protocols (HTTPS, SSH)
+- Implement proper error handling for network failures
+
+## Documentation Standards
+
+### 1. Script Comments
+- Include purpose and usage in header comments
+- Document complex logic and algorithms
+- Explain any non-obvious operations
+
+### 2. Function Documentation
+```bash
+# Function: function_name
+# Description: What this function does
+# Parameters: $1 - description, $2 - description
+# Returns: exit code or output description
+function_name() {
+    # Implementation
+}
+```
+
+### 3. Usage Examples
+Include usage examples in script comments or README files.
+
+## Testing and Validation
+
+### 1. Dry Run Mode
+Implement dry-run capabilities where appropriate:
+
+```bash
+if [[ "${DRY_RUN:-false}" == "true" ]]; then
+    log_info "DRY RUN: Would execute: $command"
+    return 0
+fi
+```
+
+### 2. Validation Functions
+Create validation functions for common operations:
+
+```bash
+validate_port() {
+    local port="$1"
+    if ! [[ "$port" =~ ^[0-9]+$ ]] || [ "$port" -lt 1 ] || [ "$port" -gt 65535 ]; then
+        log_error "Invalid port number: $port"
+        return 1
+    fi
+}
+```
+
+## Integration with HADES System
+
+### 1. Script Discovery
+Scripts should be discoverable by the HADES installer:
+- Place in appropriate category directory
+- Use descriptive filenames
+- Include proper shebang
+
+### 2. Metadata
+Scripts can include metadata for the installer:
+- Description in first comment line
+- Requirements (sudo, network, etc.)
+- Dependencies
+
+### 3. Exit Codes
+Use consistent exit codes:
+- 0: Success
+- 1: General error
+- 2: Invalid arguments
+- 3: Missing dependencies
+- 130: User interrupt (Ctrl+C)

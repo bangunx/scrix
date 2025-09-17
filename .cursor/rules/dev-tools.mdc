@@ -1,0 +1,390 @@
+---
+globs: script/dev-tools/*.sh,script/ai-tools/*.sh
+description: "Development tools installation and configuration scripts for various programming languages and environments"
+---
+
+# Development Tools Installation and Configuration Standards
+
+This rule applies to scripts in the `script/dev-tools/` and `script/ai-tools/` directories, which handle development environment setup, tool installation, and configuration.
+
+## Development Tool Categories
+
+### Core Development Tools
+- [install-dev-tools.sh](mdc:script/dev-tools/install-dev-tools.sh) - Main development tools installer
+- [docker-install.sh](mdc:script/dev-tools/docker-install.sh) - Docker installation and configuration
+- [tmux-install.sh](mdc:script/dev-tools/tmux-install.sh) - Tmux terminal multiplexer setup
+- [zsh-tmux.sh](mdc:script/dev-tools/zsh-tmux.sh) - Zsh shell and Tmux configuration
+- [connect-gh.sh](mdc:script/dev-tools/connect-gh.sh) - GitHub connection and authentication
+
+### AI Development Tools
+- [opencode.sh](mdc:script/ai-tools/opencode.sh) - OpenCode AI installation script
+
+## Development Environment Standards
+
+### 1. Multi-Language Support
+Development scripts should support multiple programming languages and environments:
+
+```bash
+detect_development_needs() {
+    local languages=()
+    
+    # Check for Node.js projects
+    if [[ -f "package.json" ]] || command -v node &> /dev/null; then
+        languages+=("nodejs")
+    fi
+    
+    # Check for Python projects
+    if [[ -f "requirements.txt" ]] || [[ -f "pyproject.toml" ]] || command -v python3 &> /dev/null; then
+        languages+=("python")
+    fi
+    
+    # Check for Go projects
+    if [[ -f "go.mod" ]] || command -v go &> /dev/null; then
+        languages+=("go")
+    fi
+    
+    # Check for Rust projects
+    if [[ -f "Cargo.toml" ]] || command -v cargo &> /dev/null; then
+        languages+=("rust")
+    fi
+    
+    echo "${languages[@]}"
+}
+```
+
+### 2. Package Manager Detection
+Support multiple package managers and installation methods:
+
+```bash
+install_nodejs() {
+    local version="${1:-latest}"
+    
+    # Detect existing Node.js installation
+    if command -v node &> /dev/null; then
+        local current_version=$(node --version)
+        log_info "Node.js already installed: $current_version"
+        return 0
+    fi
+    
+    # Install using Node Version Manager (nvm)
+    if command -v curl &> /dev/null; then
+        log_info "Installing Node.js via nvm..."
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+        source ~/.bashrc
+        nvm install "$version"
+        nvm use "$version"
+    else
+        log_error "curl is required for Node.js installation"
+        return 1
+    fi
+}
+```
+
+### 3. Docker Environment Setup
+Comprehensive Docker installation and configuration:
+
+```bash
+install_docker() {
+    # Remove old Docker versions
+    apt-get remove -y docker docker-engine docker.io containerd runc
+    
+    # Install prerequisites
+    apt-get update
+    apt-get install -y ca-certificates curl gnupg lsb-release
+    
+    # Add Docker's official GPG key
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    
+    # Add Docker repository
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+    
+    # Install Docker Engine
+    apt-get update
+    apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+    
+    # Add user to docker group
+    usermod -aG docker "$USER"
+    
+    # Enable Docker service
+    systemctl enable docker
+    systemctl start docker
+    
+    log_success "Docker installed successfully"
+}
+```
+
+### 4. Terminal Environment Configuration
+Modern terminal setup with Tmux and Zsh:
+
+```bash
+setup_terminal_environment() {
+    # Install Zsh
+    apt-get install -y zsh
+    
+    # Install Oh My Zsh
+    if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
+        sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    fi
+    
+    # Install Tmux
+    apt-get install -y tmux
+    
+    # Configure Tmux
+    cat > ~/.tmux.conf << 'EOF'
+# Tmux configuration
+set -g default-terminal "screen-256color"
+set -g history-limit 10000
+set -g mouse on
+
+# Key bindings
+bind | split-window -h
+bind - split-window -v
+bind h select-pane -L
+bind j select-pane -D
+bind k select-pane -U
+bind l select-pane -R
+
+# Status bar
+set -g status-bg colour235
+set -g status-fg colour136
+set -g status-left '#[fg=colour166]#S '
+set -g status-right '#[fg=colour166]%Y-%m-%d %H:%M '
+EOF
+    
+    log_success "Terminal environment configured"
+}
+```
+
+### 5. Development Tool Installation
+Comprehensive development tool setup:
+
+```bash
+install_development_tools() {
+    local tools=(
+        "git"
+        "curl"
+        "wget"
+        "vim"
+        "nano"
+        "htop"
+        "tree"
+        "jq"
+        "unzip"
+        "build-essential"
+    )
+    
+    for tool in "${tools[@]}"; do
+        if ! command -v "$tool" &> /dev/null; then
+            log_info "Installing $tool..."
+            apt-get install -y "$tool"
+        else
+            log_info "$tool is already installed"
+        fi
+    done
+}
+```
+
+## Language-Specific Standards
+
+### 1. Python Development
+```bash
+setup_python_environment() {
+    local python_version="${1:-3.11}"
+    
+    # Install Python and pip
+    apt-get install -y "python${python_version}" "python${python_version}-pip" "python${python_version}-venv"
+    
+    # Install common Python packages
+    pip3 install --upgrade pip setuptools wheel
+    
+    # Install development tools
+    pip3 install black flake8 pytest mypy
+    
+    # Create virtual environment helper
+    cat > /usr/local/bin/pyvenv << 'EOF'
+#!/bin/bash
+python3 -m venv "$1"
+source "$1/bin/activate"
+pip install --upgrade pip
+EOF
+    chmod +x /usr/local/bin/pyvenv
+    
+    log_success "Python development environment ready"
+}
+```
+
+### 2. Node.js Development
+```bash
+setup_nodejs_environment() {
+    # Install Node.js via nvm
+    install_nodejs "lts"
+    
+    # Install global npm packages
+    npm install -g npm@latest
+    npm install -g typescript ts-node nodemon eslint prettier
+    
+    # Configure npm
+    npm config set init-author-name "$USER"
+    npm config set init-license "MIT"
+    
+    log_success "Node.js development environment ready"
+}
+```
+
+### 3. Go Development
+```bash
+setup_go_environment() {
+    local go_version="${1:-1.21}"
+    
+    # Download and install Go
+    wget "https://go.dev/dl/go${go_version}.linux-amd64.tar.gz"
+    tar -C /usr/local -xzf "go${go_version}.linux-amd64.tar.gz"
+    rm "go${go_version}.linux-amd64.tar.gz"
+    
+    # Set up environment variables
+    cat >> ~/.bashrc << 'EOF'
+export PATH=$PATH:/usr/local/go/bin
+export GOPATH=$HOME/go
+export PATH=$PATH:$GOPATH/bin
+EOF
+    
+    # Install common Go tools
+    source ~/.bashrc
+    go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+    
+    log_success "Go development environment ready"
+}
+```
+
+### 4. Rust Development
+```bash
+setup_rust_environment() {
+    # Install Rust via rustup
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    
+    # Add to PATH
+    source ~/.cargo/env
+    
+    # Install common Rust tools
+    cargo install cargo-edit cargo-watch cargo-audit
+    
+    log_success "Rust development environment ready"
+}
+```
+
+## AI Development Tools
+
+### 1. OpenCode AI Installation
+```bash
+install_opencode_ai() {
+    # Check prerequisites
+    if ! command -v curl &> /dev/null; then
+        log_error "curl is required for OpenCode AI installation"
+        return 1
+    fi
+    
+    # Install OpenCode AI
+    log_info "Installing OpenCode AI..."
+    curl -fsSL https://opencode.ai/install | bash opencodeai
+    
+    # Verify installation
+    if command -v opencodeai &> /dev/null; then
+        log_success "OpenCode AI installed successfully"
+        log_info "Version: $(opencodeai --version)"
+    else
+        log_error "OpenCode AI installation failed"
+        return 1
+    fi
+}
+```
+
+## GitHub Integration
+
+### 1. SSH Key Setup
+```bash
+setup_github_ssh() {
+    local email="$1"
+    
+    if [[ -z "$email" ]]; then
+        log_error "GitHub email is required"
+        return 1
+    fi
+    
+    # Generate SSH key if it doesn't exist
+    if [[ ! -f ~/.ssh/id_ed25519 ]]; then
+        ssh-keygen -t ed25519 -C "$email" -f ~/.ssh/id_ed25519 -N ""
+    fi
+    
+    # Start SSH agent and add key
+    eval "$(ssh-agent -s)"
+    ssh-add ~/.ssh/id_ed25519
+    
+    # Display public key
+    log_info "Add this public key to your GitHub account:"
+    cat ~/.ssh/id_ed25519.pub
+    
+    # Test GitHub connection
+    log_info "Testing GitHub connection..."
+    ssh -T git@github.com
+}
+```
+
+### 2. Git Configuration
+```bash
+configure_git() {
+    local name="$1"
+    local email="$2"
+    
+    git config --global user.name "$name"
+    git config --global user.email "$email"
+    git config --global init.defaultBranch main
+    git config --global pull.rebase false
+    git config --global push.default simple
+    
+    log_success "Git configured for $name <$email>"
+}
+```
+
+## Development Script Requirements
+
+### 1. Environment Detection
+- Detect existing installations
+- Check for required dependencies
+- Provide upgrade options for existing tools
+
+### 2. Version Management
+- Support multiple versions of tools
+- Use version managers when available
+- Provide version switching capabilities
+
+### 3. Configuration Management
+- Create consistent configuration files
+- Backup existing configurations
+- Provide customization options
+
+### 4. Integration Testing
+- Verify installations work correctly
+- Test tool integrations
+- Provide troubleshooting information
+
+## Best Practices
+
+### 1. User Experience
+- Provide clear progress indicators
+- Offer customization options
+- Include helpful post-installation instructions
+
+### 2. Error Handling
+- Check for prerequisites
+- Handle installation failures gracefully
+- Provide clear error messages
+
+### 3. Documentation
+- Document all installed tools
+- Provide usage examples
+- Include troubleshooting guides
+
+### 4. Maintenance
+- Support tool updates
+- Provide uninstall options
+- Include cleanup procedures

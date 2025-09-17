@@ -1,0 +1,59 @@
+---
+alwaysApply: true
+---
+
+# HADES Script Collection - Project Structure Guide
+
+This is a comprehensive script collection management system called "HADES" (Script Collection Management System). The main entry point is [install.sh](mdc:install.sh), which provides an interactive installer for managing and executing scripts.
+
+## Project Structure
+
+### Core Files
+- [install.sh](mdc:install.sh) - Main installer and script executor with interactive menu system
+- [README.md](mdc:README.md) - Project documentation and usage instructions
+- [backups.sh](mdc:backups.sh) - Backup management script
+- [test.sh](mdc:test.sh) - Testing utilities
+
+### Script Categories
+The `script/` directory contains organized categories:
+
+- **ai-tools/** - AI development tools and utilities
+  - [opencode.sh](mdc:script/ai-tools/opencode.sh) - OpenCode AI installation script
+  
+- **dev-tools/** - Development environment setup
+  - [docker-install.sh](mdc:script/dev-tools/docker-install.sh) - Docker installation
+  - [install-dev-tools.sh](mdc:script/dev-tools/install-dev-tools.sh) - Development tools installer
+  - [tmux-install.sh](mdc:script/dev-tools/tmux-install.sh) - Tmux installation
+  - [zsh-tmux.sh](mdc:script/dev-tools/zsh-tmux.sh) - Zsh and Tmux configuration
+  - [connect-gh.sh](mdc:script/dev-tools/connect-gh.sh) - GitHub connection utilities
+
+- **vm-test/** - VPS security hardening and testing
+  - [harden-server.sh](mdc:script/vm-test/harden-server.sh) - Server hardening script
+  - [vps-check.sh](mdc:script/vm-test/vps-check.sh) - VPS health checks
+  - [vps-sec-check.sh](mdc:script/vm-test/vps-sec-check.sh) - Security audit script
+  - [ssh-config.sh](mdc:script/vm-test/ssh-config.sh) - SSH configuration
+  - [aktif-otp.sh](mdc:script/vm-test/aktif-otp.sh) - OTP activation
+  - [docs/](mdc:script/vm-test/docs/) - Documentation for security scripts
+
+- **setupOS/** - Operating system setup scripts
+  - [omakub.sh](mdc:script/setupOS/omakub.sh) - Ubuntu setup
+  - [omarchy.sh](mdc:script/setupOS/omarchy.sh) - Arch Linux setup
+
+- **jaringan/** - Network configuration scripts
+- **password-generator/** - Password generation utilities
+- **dev-env/** - Development environment configuration
+
+## Key Features
+- Interactive script selection with category-based organization
+- Support for multiple script execution
+- Automatic sudo detection and handling
+- Comprehensive error handling and logging
+- Beautiful terminal UI with colors and emojis
+- Idempotent script execution (safe to run multiple times)
+
+## Usage Patterns
+- Scripts are organized by functionality in subdirectories
+- Each script should be executable and include proper error handling
+- Scripts should be idempotent when possible
+- Security scripts in vm-test/ require sudo privileges
+- All scripts follow bash best practices with `set -euo pipefail`

@@ -1,0 +1,300 @@
+---
+globs: script/vm-test/*.sh,script/vm-test/docs/*.md
+description: "VibeOps – Linux VPS security hardening, audits, and stack bootstrapping (Node/Bun, Python, Go, Rust). Uses local scripts for checks and proposes non-interactive, idempotent commands."
+---
+
+# VPS Security Hardening and Testing Standards
+
+This rule applies to scripts in the `script/vm-test/` directory, which handle VPS security hardening, auditing, and system administration tasks.
+
+## Security Script Categories
+
+### Core Security Scripts
+- [harden-server.sh](mdc:script/vm-test/harden-server.sh) - Main server hardening script
+- [vps-sec-check.sh](mdc:script/vm-test/vps-sec-check.sh) - Security audit and verification
+- [vps-check.sh](mdc:script/vm-test/vps-check.sh) - General VPS health checks
+- [ssh-config.sh](mdc:script/vm-test/ssh-config.sh) - SSH configuration hardening
+- [aktif-otp.sh](mdc:script/vm-test/aktif-otp.sh) - OTP/MFA activation
+
+### Documentation
+- [README.md](mdc:script/vm-test/README.md) - Main security documentation
+- [docs/vps-security.md](mdc:script/vm-test/docs/vps-security.md) - Detailed security guide
+- [docs/ssh-config.md](mdc:script/vm-test/docs/ssh-config.md) - SSH configuration guide
+- [docs/mfa.md](mdc:script/vm-test/docs/mfa.md) - Multi-factor authentication setup
+
+## Security Hardening Standards
+
+### 1. OS Detection and Compatibility
+All security scripts must:
+- Detect OS type (Debian/Ubuntu/Arch)
+- Verify package manager availability (apt/yum/pacman)
+- Check for required system capabilities
+- Provide clear error messages for unsupported systems
+
+```bash
+detect_os() {
+    if [[ -f /etc/os-release ]]; then
+        . /etc/os-release
+        OS_NAME="$ID"
+        OS_VERSION="$VERSION_ID"
+    else
+        log_error "Cannot detect operating system"
+        exit 1
+    fi
+}
+```
+
+### 2. Package Management Security
+- Always update package lists before installation
+- Use unattended-upgrades for automatic security updates
+- Configure automatic reboots during maintenance windows
+- Verify package integrity before installation
+
+```bash
+setup_unattended_upgrades() {
+    local reboot_time="${1:-03:30}"
+    
+    cat > /etc/apt/apt.conf.d/20auto-upgrades << EOF
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+Unattended-Upgrade::Automatic-Reboot "true";
+Unattended-Upgrade::Automatic-Reboot-Time "$reboot_time";
+EOF
+}
+```
+
+### 3. Firewall Configuration (UFW)
+- Default deny incoming connections
+- Allow only necessary services (SSH, HTTP, HTTPS)
+- Use specific port rules rather than broad ranges
+- Enable logging for security monitoring
+
+```bash
+configure_ufw() {
+    # Reset UFW to defaults
+    ufw --force reset
+    
+    # Default policies
+    ufw default deny incoming
+    ufw default allow outgoing
+    
+    # Essential services
+    ufw allow OpenSSH
+    ufw allow 80/tcp
+    ufw allow 443/tcp
+    
+    # Enable firewall
+    ufw --force enable
+}
+```
+
+### 4. SSH Hardening
+- Disable root login
+- Limit authentication attempts
+- Disable X11 forwarding
+- Use key-based authentication when possible
+- Configure proper timeout settings
+
+```bash
+harden_ssh() {
+    local ssh_config="/etc/ssh/sshd_config"
+    
+    # Backup original configuration
+    cp "$ssh_config" "${ssh_config}.$(date +%Y%m%d-%H%M%S).bak"
+    
+    # Apply security settings
+    sed -i 's/#PermitRootLogin yes/PermitRootLogin no/' "$ssh_config"
+    sed -i 's/#MaxAuthTries 6/MaxAuthTries 4/' "$ssh_config"
+    sed -i 's/#X11Forwarding yes/X11Forwarding no/' "$ssh_config"
+    
+    # Disable password auth if SSH keys exist
+    if [[ -f ~/.ssh/authorized_keys ]]; then
+        sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' "$ssh_config"
+    fi
+    
+    systemctl restart ssh
+}
+```
+
+### 5. Fail2ban Configuration
+- Monitor SSH login attempts
+- Configure appropriate ban times
+- Use UFW integration for blocking
+- Monitor other services as needed
+
+```bash
+setup_fail2ban() {
+    apt-get install -y fail2ban
+    
+    cat > /etc/fail2ban/jail.local << EOF
+[sshd]
+enabled = true
+port = ssh
+filter = sshd
+maxretry = 5
+findtime = 10m
+bantime = 1h
+banaction = ufw
+EOF
+    
+    systemctl enable fail2ban
+    systemctl restart fail2ban
+}
+```
+
+### 6. System Hardening (sysctl)
+Apply conservative kernel parameter hardening:
+
+```bash
+apply_sysctl_hardening() {
+    cat > /etc/sysctl.d/99-security.conf << EOF
+# Network security
+net.ipv4.conf.all.send_redirects = 0
+net.ipv4.conf.default.send_redirects = 0
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv4.conf.default.accept_redirects = 0
+net.ipv4.conf.all.accept_source_route = 0
+net.ipv4.conf.default.accept_source_route = 0
+
+# IP spoofing protection
+net.ipv4.conf.all.rp_filter = 1
+net.ipv4.conf.default.rp_filter = 1
+
+# Ignore ICMP redirects
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv6.conf.all.accept_redirects = 0
+EOF
+    
+    sysctl -p /etc/sysctl.d/99-security.conf
+}
+```
+
+### 7. Time Synchronization
+Ensure proper time synchronization:
+
+```bash
+setup_ntp() {
+    systemctl enable systemd-timesyncd
+    systemctl start systemd-timesyncd
+    
+    # Verify time sync
+    timedatectl status
+}
+```
+
+## Security Audit Standards
+
+### 1. Comprehensive Security Checks
+Security audit scripts should verify:
+- Firewall status and rules
+- SSH configuration
+- Fail2ban status
+- System updates
+- Service status
+- Network security
+- File permissions
+
+### 2. Audit Output Format
+Provide clear, actionable audit results:
+
+```bash
+audit_firewall() {
+    echo "=== FIREWALL AUDIT ==="
+    ufw status verbose
+    echo ""
+    
+    echo "=== LISTENING PORTS ==="
+    ss -tulpen
+    echo ""
+}
+```
+
+### 3. Remediation Suggestions
+Include specific remediation steps for security issues found:
+
+```bash
+suggest_remediation() {
+    local issue="$1"
+    case "$issue" in
+        "root_login_enabled")
+            echo "Remediation: Run 'sudo sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config'"
+            ;;
+        "firewall_disabled")
+            echo "Remediation: Run 'sudo ufw enable'"
+            ;;
+    esac
+}
+```
+
+## Security Script Requirements
+
+### 1. Idempotent Operations
+- All security scripts must be safe to run multiple times
+- Check existing configurations before applying changes
+- Use conditional logic to avoid duplicate operations
+
+### 2. Backup Strategy
+- Always backup configuration files before modification
+- Include timestamp in backup filenames
+- Provide rollback instructions
+
+### 3. Privilege Management
+- Clearly document sudo requirements
+- Minimize privilege escalation scope
+- Validate sudo access before execution
+
+### 4. Error Handling
+- Comprehensive error checking
+- Graceful failure handling
+- Clear error messages with context
+
+### 5. Logging and Monitoring
+- Log all security-related changes
+- Provide audit trails
+- Include verification steps
+
+## Integration with HADES System
+
+### 1. Script Metadata
+Security scripts should include metadata for the installer:
+- Clear description of security purpose
+- Sudo requirements
+- System compatibility
+- Dependencies
+
+### 2. Execution Order
+Consider script execution order for security hardening:
+1. System updates
+2. Firewall configuration
+3. SSH hardening
+4. Service configuration
+5. Final verification
+
+### 3. Verification Steps
+Include post-execution verification:
+- Service status checks
+- Configuration validation
+- Security audit runs
+- Network connectivity tests
+
+## Best Practices
+
+### 1. Security First
+- Never compromise security for convenience
+- Provide secure defaults
+- Document security implications
+
+### 2. User Safety
+- Prevent accidental lockouts
+- Provide rollback procedures
+- Include safety checks
+
+### 3. Documentation
+- Document all security changes
+- Provide troubleshooting guides
+- Include verification procedures
+
+### 4. Testing
+- Test on non-production systems first
+- Verify all security configurations
+- Include comprehensive audit procedures
