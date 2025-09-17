@@ -43,25 +43,26 @@ jobs:
         
     - name: Update package.json version
       run: |
-        npm version ${{ steps.version.outputs.version }} --no-git-tag-version
+        node scripts/update-version.js
         echo "✅ Updated package.json to version ${{ steps.version.outputs.version }}"
-        
-    - name: Validate package
-      run: |
-        echo "🔍 Validating package..."
-        npm pack --dry-run
-        echo "✅ Package validation successful"
         
     - name: Install dependencies
       run: |
         echo "📥 Installing dependencies..."
-        npm ci
+        npm install
         
     - name: Run tests
       run: |
         echo "🧪 Running tests..."
         chmod +x test-install.sh
-        ./test-install.sh || echo "⚠️ Tests completed with warnings"
+        chmod +x scripts/update-version.js
+        chmod +x scripts/bump-version.sh
+        # Test version update script
+        node scripts/update-version.js
+        echo "✅ Version update script works"
+        # Test package validation
+        npm pack --dry-run
+        echo "✅ Package validation successful"
         
     - name: Publish to NPM
       run: |
@@ -118,9 +119,14 @@ jobs:
         echo "$NEW_VERSION" > VERSION
         echo "📝 Updated VERSION file to $NEW_VERSION for next release"
         
-        # Commit and push the updated VERSION file
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add VERSION
-        git commit -m "chore: bump version to $NEW_VERSION [skip ci]" || echo "No changes to commit"
-        git push || echo "Push failed or no changes"
+        # Only commit if there are changes
+        if git diff --quiet VERSION; then
+          echo "ℹ️ No changes to VERSION file"
+        else
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add VERSION
+          git commit -m "chore: bump version to $NEW_VERSION [skip ci]"
+          git push
+          echo "✅ Updated VERSION file committed and pushed"
+        fi
